@@ -27,7 +27,7 @@ import random
 from sklearn.svm import LinearSVC, SVC
 
 # sys.path.append("..")  # Adds higher directory to python modules path.
-sys.path.append("../../debias_manager") # Adds higher directory to python modules path.
+sys.path.append("../../debias_files") # Adds higher directory to python modules path.
 
 from consts import get_debias_files_from_config, EMBEDDING_SIZE, DEFINITIONAL_FILE, PROFESSIONS_FILE, \
     GENDER_SPECIFIC_FILE, EQUALIZE_FILE, get_basic_configurations, DebiasMethod
@@ -496,8 +496,8 @@ class DebiasBlukbasyManager(DebiasManager):
 # if __name__ == '__main__':
 #     print("hello world")
 #     CONSTS_CONFIG_STR = "{'USE_DEBIASED': 0, 'LANGUAGE': 0, 'COLLECT_EMBEDDING_TABLE': 0, 'PRINT_LINE_NUMS': 0, 'DEBIAS_METHOD': 1}"
-#     debias_manager = DebiasManager.get_manager_instance(CONSTS_CONFIG_STR)
-#     debiased_embedding = debias_manager.debias_embedding_table()
+#     debias_files = DebiasManager.get_manager_instance(CONSTS_CONFIG_STR)
+#     debiased_embedding = debias_files.debias_embedding_table()
 #     print(np.shape(debiased_embedding))
 #     print(debiased_embedding)
-#     debias_manager.debias_sanity_check(debiased_embedding_table=debiased_embedding)
+#     debias_files.debias_sanity_check(debiased_embedding_table=debiased_embedding)

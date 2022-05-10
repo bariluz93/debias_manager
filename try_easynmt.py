@@ -3,9 +3,9 @@ from sacrebleu.metrics import BLEU
 from detokenize import detokenize_matrix
 import sys
 # sys.path.append("../../") # Adds higher directory to python modules path.
-sys.path.append("../../debias_manager") # Adds higher directory to python modules path.
+sys.path.append("../../debias_files") # Adds higher directory to python modules path.
 from consts import get_debias_files_from_config, EMBEDDING_SIZE, DEFINITIONAL_FILE, PROFESSIONS_FILE, \
-    GENDER_SPECIFIC_FILE, EQUALIZE_FILE, get_basic_configurations, DebiasMethod, DEBIAS_MANAGER_HOME
+    GENDER_SPECIFIC_FILE, EQUALIZE_FILE, get_basic_configurations, DebiasMethod, DEBIAS_FILES_HOME
 model = EasyNMT('opus-mt')
 GOLD_HOME = "/cs/snapless/oabend/borgr/SSMT/data/"
 ru_data = GOLD_HOME + "en_ru/newstest2019-enru.en"
@@ -16,9 +16,9 @@ ru_gold = GOLD_HOME + "en_ru/newstest2019-enru.ru"
 de_gold = GOLD_HOME + "en_de/newstest2012.de"
 he_gold = GOLD_HOME + "en_he/dev.he"
 
-ru_translation_file = DEBIAS_MANAGER_HOME + "en_ru_easynmt"
-de_translation_file = DEBIAS_MANAGER_HOME + "en_de_easynmt"
-he_translation_file = DEBIAS_MANAGER_HOME + "en_he_easynmt"
+ru_translation_file = DEBIAS_FILES_HOME + "en_ru_easynmt"
+de_translation_file = DEBIAS_FILES_HOME + "en_de_easynmt"
+he_translation_file = DEBIAS_FILES_HOME + "en_he_easynmt"
 def check_easynmt():
 
     # #Translate several sentences to German
