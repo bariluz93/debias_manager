@@ -7,7 +7,7 @@ import ast
 #     with open("/cs/labs/gabis/bareluz/nematus_clean/nematus/consts_config.json","w") as f:
 #         f.write(j)
 from enum import Enum
-
+from datetime import datetime
 
 class Language(Enum):
     RUSSIAN = 0
@@ -90,7 +90,8 @@ def get_debias_files_from_config(config_str):
     # the file to which the debiased embedding table is saved at the end
     DEBIASED_EMBEDDING = DEBIAS_MANAGER_HOME + "en-" + lang + "/debias/Nematus-hard-debiased-" + lang + "-"+debias_method+".txt"
 
-    SANITY_CHECK__FILE = DEBIAS_MANAGER_HOME + "en-" + lang + "/debias/sanity_check.csv"
+    now = datetime.now()
+    SANITY_CHECK__FILE = DEBIAS_MANAGER_HOME + "en-" + lang + "/debias/sanity_check_"+now.strftime("%d-%m-%Y_%H-%M-%S")+".csv"
 
     return DICT_SIZE, ENG_DICT_FILE, OUTPUT_TRANSLATE_FILE, EMBEDDING_TABLE_FILE, EMBEDDING_DEBIASWE_FILE, DEBIASED_EMBEDDING, SANITY_CHECK__FILE
 
