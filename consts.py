@@ -14,7 +14,7 @@ class Language(Enum):
     GERMAN = 1
     HEBREW = 2
 
-
+LANGUAGE_STR_TO_INT_MAP = {'ru': 0,'de':1,'he':2}
 LANGUAGE_STR_MAP = {Language.RUSSIAN: "ru", Language.GERMAN: "de", Language.HEBREW: "he"}
 
 
