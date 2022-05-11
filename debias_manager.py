@@ -45,7 +45,7 @@ class DebiasManager():
     def __init__(self, consts_config_str):
         self.consts_config_str = consts_config_str
         self.DICT_SIZE, self.ENG_DICT_FILE, self.OUTPUT_TRANSLATE_FILE, self.EMBEDDING_TABLE_FILE, \
-        self.EMBEDDING_DEBIASWE_FILE, self.DEBIASED_EMBEDDING, self.SANITY_CHECK__FILE = get_debias_files_from_config(
+        self.EMBEDDING_DEBIASWE_FILE, self.DEBIASED_EMBEDDING, self.SANITY_CHECK_FILE = get_debias_files_from_config(
             consts_config_str)
         self.non_debiased_embeddings = self.get_non_debiased_embedding_table()
 
@@ -260,7 +260,7 @@ class DebiasManager():
         with open(self.EMBEDDING_TABLE_FILE, 'rb') as embedding_file:
             orig_embedding = pickle.load(embedding_file)
             orig_embedding = orig_embedding.astype('float32')
-        with open(self.SANITY_CHECK__FILE, 'wt') as f:
+        with open(self.SANITY_CHECK_FILE, 'wt') as f:
             writer = csv.writer(f)
             writer.writerow(["word", "bias before", "bias after"])
         print("--------professions--------")

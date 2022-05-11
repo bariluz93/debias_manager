@@ -29,28 +29,29 @@ NEMATUS_HOME = "/cs/labs/gabis/bareluz/nematus_clean/nematus/"
 DEBIAS_FILES_HOME = "/cs/usr/bareluz/gabi_labs/nematus_clean/debias_files/"
 PREPROCESS_HOME = "/cs/snapless/oabend/borgr/SSMT/preprocess/data/"
 MT_GENDER_HOME = "/cs/usr/bareluz/gabi_labs/nematus_clean/mt_gender/"
+DATA_HOME = "/cs/snapless/gabis/bareluz/data/"
 param_dict = {
     Language.RUSSIAN:
         {
             "DICT_SIZE": 30648,
-            "ENG_DICT_FILE": PREPROCESS_HOME + "en_ru/30.11.20//train.clean.unesc.tok.tc.bpe.en.json",
-            "BLEU_SOURCE_DATA": PREPROCESS_HOME + "en_ru/30.11.20/newstest2019-enru.unesc.tok.tc.bpe.en",
-            "BLEU_GOLD_DATA": PREPROCESS_HOME + "en_ru/30.11.20/newstest2019-enru.unesc.tok.tc.bpe.ru",
+            "ENG_DICT_FILE": DATA_HOME + "en_ru_30.11.20//train.clean.unesc.tok.tc.bpe.en.json",
+            "BLEU_SOURCE_DATA": DATA_HOME + "en_ru_30.11.20/newstest2019-enru.unesc.tok.tc.bpe.en",
+            "BLEU_GOLD_DATA": DATA_HOME + "en_ru_30.11.20/newstest2019-enru.unesc.tok.tc.bpe.ru",
 
         },
     Language.GERMAN:
         {
             "DICT_SIZE": 29344,
-            "ENG_DICT_FILE": PREPROCESS_HOME + "en_de/5.8/train.clean.unesc.tok.tc.bpe.en.json",
-            "BLEU_SOURCE_DATA": PREPROCESS_HOME + "en_de/5.8/newstest2012.unesc.tok.tc.bpe.en",
-            "BLEU_GOLD_DATA": PREPROCESS_HOME + "en_de/5.8/newstest2012.unesc.tok.tc.bpe.de",
+            "ENG_DICT_FILE": DATA_HOME + "en_de_5.8/train.clean.unesc.tok.tc.bpe.en.json",
+            "BLEU_SOURCE_DATA": DATA_HOME + "en_de_5.8/newstest2012.unesc.tok.tc.bpe.en",
+            "BLEU_GOLD_DATA": DATA_HOME + "en_de_5.8/newstest2012.unesc.tok.tc.bpe.de",
         },
     Language.HEBREW:
         {
             "DICT_SIZE": 30545,
-            "ENG_DICT_FILE": PREPROCESS_HOME + "en_he/20.07.21//train.clean.unesc.tok.tc.bpe.en.json",
-            "BLEU_SOURCE_DATA": PREPROCESS_HOME + "en_he/20.07.21//dev.unesc.tok.tc.bpe.en",
-            "BLEU_GOLD_DATA": PREPROCESS_HOME + "en_he/20.07.21//dev.unesc.tok.bpe.he",
+            "ENG_DICT_FILE": DATA_HOME + "en_he_20.07.21//train.clean.unesc.tok.tc.bpe.en.json",
+            "BLEU_SOURCE_DATA": DATA_HOME + "en_he_20.07.21//dev.unesc.tok.tc.bpe.en",
+            "BLEU_GOLD_DATA": DATA_HOME + "en_he_20.07.21//dev.unesc.tok.bpe.he",
         }
 }
 
@@ -92,9 +93,9 @@ def get_debias_files_from_config(config_str):
     DEBIASED_EMBEDDING = DEBIAS_FILES_HOME + "en-" + lang + "/debias/Nematus-hard-debiased-" + lang + "-" + debias_method + ".txt"
 
     now = datetime.now()
-    SANITY_CHECK__FILE = DEBIAS_FILES_HOME + "en-" + lang + "/debias/sanity_check_" + now.strftime("%d-%m-%Y_%H-%M-%S") + ".csv"
+    SANITY_CHECK_FILE = DEBIAS_FILES_HOME + "en-" + lang + "/debias/sanity_check_" + now.strftime("%d-%m-%Y_%H-%M-%S") + ".csv"
 
-    return DICT_SIZE, ENG_DICT_FILE, OUTPUT_TRANSLATE_FILE, EMBEDDING_TABLE_FILE, EMBEDDING_DEBIASWE_FILE, DEBIASED_EMBEDDING, SANITY_CHECK__FILE
+    return DICT_SIZE, ENG_DICT_FILE, OUTPUT_TRANSLATE_FILE, EMBEDDING_TABLE_FILE, EMBEDDING_DEBIASWE_FILE, DEBIASED_EMBEDDING, SANITY_CHECK_FILE
 
 
 def get_evaluate_gender_files(config_str):
