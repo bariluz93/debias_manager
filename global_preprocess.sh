@@ -31,7 +31,7 @@ case ${TRG} in
 		;;
 esac
 
- training lengths
+# training lengths
 min_length=3
 max_length=100
 ratio=1.5
@@ -50,10 +50,10 @@ subword_nmt=/cs/snapless/oabend/borgr/SSMT/preprocess/subword-nmt
 # path to unescaping scripts
 unescape=/cs/snapless/oabend/borgr/SSMT/preprocess/unescape.py
 # nematus dir
-nematus_home=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/
-datadir=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/${SRC}-${TRG}
+#nematus_home=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/
+datadir=/cs/usr/bareluz/gabi_labs/nematus_clean/debias_outputs/${SRC}-${TRG}
 traindir=/cs/snapless/oabend/borgr/SSMT/data/${SRC}_${TRG}
-workdir=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/${SRC}-${TRG}/preprocess/
+workdir=/cs/usr/bareluz/gabi_labs/nematus_clean/debias_outputs/${SRC}-${TRG}/preprocess/
 mkdir -p "$workdir"
 modeldir=/cs/snapless/oabend/borgr/SSMT/preprocess/model/${ID}
 mkdir -p "$modeldir"

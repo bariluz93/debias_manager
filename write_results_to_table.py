@@ -1,6 +1,6 @@
 import argparse
 import re
-from consts import LANGUAGE_STR_MAP,DebiasMethod, DEBIAS_FILES_HOME
+from consts import LANGUAGE_STR_MAP,DebiasMethod, DEBIAS_FILES_HOME, OUTPUTS_HOME
 import pandas as pd
 import numpy as np
 import json
@@ -95,7 +95,7 @@ def write_results_to_table(results):
     df = pd.DataFrame(results, index=["Original", "Bolukbasy", "Null It Out"], columns=index)
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-    with open(DEBIAS_FILES_HOME+"results/results_"+dt_string+".tex", 'w') as f:
+    with open(OUTPUTS_HOME+"results/results_"+dt_string+".tex", 'w') as f:
         f.write(df.to_latex())
     pass
 if __name__ == '__main__':
@@ -115,8 +115,8 @@ if __name__ == '__main__':
         result_files[language] = {}
         for debias_method in DEBIAS_METHODS:
             result_files[language][debias_method] = {}
-            result_files[language][debias_method]["translation"] = DEBIAS_FILES_HOME + "en-" + language + "/debias/translation_evaluation_" + language + "_"+str(debias_method)+".txt"
-            result_files[language][debias_method]["gender"] = DEBIAS_FILES_HOME + "en-" + language + "/debias/gender_evaluation_" + language + "_"+str(debias_method)+".txt"
+            result_files[language][debias_method]["translation"] = OUTPUTS_HOME + "en-" + language + "/debias/translation_evaluation_" + language + "_"+str(debias_method)+".txt"
+            result_files[language][debias_method]["gender"] = OUTPUTS_HOME + "en-" + language + "/debias/gender_evaluation_" + language + "_"+str(debias_method)+".txt"
     res = get_all_results(result_files)
     for i in res:
         print(i)

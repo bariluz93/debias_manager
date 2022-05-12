@@ -12,9 +12,9 @@ ru_gold = DATA_HOME + "en_ru_30.11.20/newstest2019-enru.ru"
 de_gold = DATA_HOME + "en_de_5.8/newstest2012.de"
 he_gold = DATA_HOME + "en_he_20.07.21/dev.he"
 
-ru_translation_file = DEBIAS_FILES_HOME + "en_ru_easynmt"
-de_translation_file = DEBIAS_FILES_HOME + "en_de_easynmt"
-he_translation_file = DEBIAS_FILES_HOME + "en_he_easynmt"
+ru_translation_file = DEBIAS_FILES_HOME + "en_ru_easynmt.txt"
+de_translation_file = DEBIAS_FILES_HOME + "en_de_easynmt.txt"
+he_translation_file = DEBIAS_FILES_HOME + "en_he_easynmt.txt"
 
 def check_easynmt():
 
