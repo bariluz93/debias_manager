@@ -193,7 +193,7 @@ class DebiasManager():
         if index is None:
             with open(self.ENG_DICT_FILE, 'r') as dict_file:
                 index = json.load(dict_file)
-        f = open(self.SANITY_CHECK__FILE, 'a')
+        f = open(self.SANITY_CHECK_FILE, 'a')
         writer = csv.writer(f)
         word = "▁"+word
         if word in index:
@@ -228,7 +228,7 @@ class DebiasManager():
         gender_direction = self.get_gender_direction(index, embedding_table)
         with open(PROFESSIONS_FILE, "r") as f:
             professions = json.load(f)
-        with open(self.SANITY_CHECK__FILE, 'wt') as f:
+        with open(self.SANITY_CHECK_FILE, 'wt') as f:
             writer = csv.writer(f)
             writer.writerow(["word", "bias after"])
         print("--------professions--------")
