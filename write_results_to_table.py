@@ -82,7 +82,7 @@ def write_results_to_csv(results):
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
     Path(DEBIAS_FILES_HOME+"results").mkdir(parents=True, exist_ok=True)
-    with open(DEBIAS_FILES_HOME+"results/results_"+dt_string+".csv", 'w', encoding='UTF8', newline='') as f:
+    with open(OUTPUTS_HOME+"results/results_"+dt_string+".csv", 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(headers)
         writer.writerow(sub_headers)
