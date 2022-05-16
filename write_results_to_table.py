@@ -1,6 +1,6 @@
 import argparse
 import re
-from consts import LANGUAGE_STR_MAP,DebiasMethod, DEBIAS_FILES_HOME, OUTPUTS_HOME
+from consts import LANGUAGE_STR_MAP,DebiasMethod, DEBIAS_FILES_HOME, OUTPUTS_HOME, TranslationModels
 import pandas as pd
 import numpy as np
 import json
@@ -74,7 +74,7 @@ def get_all_results(files_dict):
     results[results==-math.inf] = None
     return results
 
-def write_results_to_csv(results):
+def write_results_to_csv(results, model):
     headers = [None, "Russian", None, None, None, "German",None, None, None,  "Hebrew", None, None, None]
     sub_headers = [None]+["Bleu", "delta Bleu", "delta s", "delta delta s"]*3
     index = [["Original"], ["Bolukbasy"], ["Null It Out"]]
@@ -82,12 +82,12 @@ def write_results_to_csv(results):
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
     Path(DEBIAS_FILES_HOME+"results").mkdir(parents=True, exist_ok=True)
-    with open(OUTPUTS_HOME+"results/results_"+dt_string+".csv", 'w', encoding='UTF8', newline='') as f:
+    with open(OUTPUTS_HOME+"results/results_"+model+"_"+dt_string+".csv", 'w', encoding='UTF8', newline='') as f:
         writer = csv.writer(f)
         writer.writerow(headers)
         writer.writerow(sub_headers)
         writer.writerows(data)
-def write_results_to_table(results):
+def write_results_to_table(results, model):
 
 
     iterables = [["Russian", "German",  "Hebrew"], ["Bleu", "delta Bleu", "delta s", "delta delta s"]]
@@ -95,30 +95,26 @@ def write_results_to_table(results):
     df = pd.DataFrame(results, index=["Original", "Bolukbasy", "Null It Out"], columns=index)
     now = datetime.now()
     dt_string = now.strftime("%d-%m-%Y_%H-%M-%S")
-    with open(OUTPUTS_HOME+"results/results_"+dt_string+".tex", 'w') as f:
+    with open(OUTPUTS_HOME+"results/results_"+model+"_"+dt_string+".tex", 'w') as f:
         f.write(df.to_latex())
     pass
 if __name__ == '__main__':
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument(
-    #         '-c', '--config_str', type=str, required=True,
-    #         help="a config dictionary str that conatains: \n"
-    #              "debiased= run translate on the debiased dictionary or not\n"
-    #              "language= the language to translate to from english. RUSSIAN = 0, GERMAN = 1, HEBREW = 2\n"
-    #              "collect_embedding_table= run translate to collect embedding table or not\n"
-    #              "print_line_nums= whether to print line numbers to output file in translate")
-    # args = parser.parse_args()
-    # TRANSLATION_EVALUATION, GENDER_EVALUATION = get_results_files(args.config_str)
-
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+            '-m', '--model', type=str, required=True,
+            help="the translation model:\n"
+                 "0 = Nematus\n1 = Easy NMT")
+    args = parser.parse_args()
+    model = TranslationModels[int(args.model)]
     result_files = {}
     for language in LANGUAGES:
         result_files[language] = {}
         for debias_method in DEBIAS_METHODS:
             result_files[language][debias_method] = {}
-            result_files[language][debias_method]["translation"] = OUTPUTS_HOME + "en-" + language + "/debias/translation_evaluation_" + language + "_"+str(debias_method)+".txt"
-            result_files[language][debias_method]["gender"] = OUTPUTS_HOME + "en-" + language + "/debias/gender_evaluation_" + language + "_"+str(debias_method)+".txt"
+            result_files[language][debias_method]["translation"] = OUTPUTS_HOME + "en-" + language + "/debias/translation_evaluation_"+ language + "_"+str(debias_method)+"_"+model+".txt"
+            result_files[language][debias_method]["gender"] = OUTPUTS_HOME + "en-" + language + "/debias/gender_evaluation_" + language + "_"+str(debias_method)+"_"+model+".txt"
     res = get_all_results(result_files)
     for i in res:
         print(i)
     # write_results_to_table(res)
-    write_results_to_csv(res)
+    write_results_to_csv(res, model)

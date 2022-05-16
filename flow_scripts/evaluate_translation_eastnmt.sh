@@ -58,14 +58,9 @@ Optional arguments:
 done
 
 scripts_dir=`pwd`
-source ${scripts_dir}/consts.sh ${language} ${debias_method} 0
+source ${scripts_dir}/consts.sh ${language} ${debias_method} 1
 
 #################### translate some dataset to test translation quality ####################
-#echo "input_path: ${input_path}"
-model_type=bpe256
-model_name=model.npz
-model_dir=${snapless_data_dir}/models/${language_dir}/${model_type}/${model_name}
-#echo "model_dir: ${model_dir}"
 outputh_path_debiased=${debias_outputs_dir}/${language_dir}/output/debiased_${debias_method}_NEMATUS.out.tmp
 outputh_path_non_debiased=${debias_outputs_dir}/${language_dir}/output/non_debiased_${debias_method}_NEMATUS.out.tmp
 #echo "outputh_path_debiased: ${outputh_path_debiased}"

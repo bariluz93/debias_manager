@@ -3,7 +3,7 @@ from os import listdir
 from os.path import isfile, join
 import shutil
 import argparse
-
+from consts import TranslationModels
 def cleanup(paths,files_to_ignore):
     for path in paths:
         dst_path = path +"/backup"
@@ -37,15 +37,22 @@ if __name__ == '__main__':
             files_to_ignore.append("output_translate_" + language + ".txt")
 
         if not args.clean_translation_files:
-            files_to_ignore+=["debiased_anti_0.out.tmp",
-                              "non_debiased_anti_0.out.tmp",
-                              "debiased_0.out.tmp",
-                              "non_debiased_0.out.tmp",
-                              "debiased_anti_1.out.tmp",
-                              "non_debiased_anti_1.out.tmp",
-                              "debiased_1.out.tmp",
-                              "non_debiased_1.out.tmp",
-                              ]
+            for debias_method in [0,1]:
+                for model in TranslationModels:
+                    files_to_ignore+=["debiased_anti_"+str(debias_method)+"_"+model+".out.tmp",
+                                      "non_debiased_anti_"+str(debias_method)+"_"+model+".out.tmp",
+                                      "debiased_"+str(debias_method)+"_"+model+".out.tmp",
+                                      "non_debiased_"+str(debias_method)+"_"+model+".out.tmp"]
+
+            # files_to_ignore+=["debiased_anti_0.out.tmp",
+            #                   "non_debiased_anti_0.out.tmp",
+            #                   "debiased_0.out.tmp",
+            #                   "non_debiased_0.out.tmp",
+            #                   "debiased_anti_1.out.tmp",
+            #                   "non_debiased_anti_1.out.tmp",
+            #                   "debiased_1.out.tmp",
+            #                   "non_debiased_1.out.tmp",
+            #                   ]
 
         cleanup(["/cs/usr/bareluz/gabi_labs/nematus_clean/debias_outputs/en-"+language +"/debias",
                  "/cs/usr/bareluz/gabi_labs/nematus_clean/debias_outputs/en-"+language +"/evaluate",
