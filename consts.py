@@ -14,6 +14,8 @@ class Language(Enum):
     GERMAN = 1
     HEBREW = 2
 
+TranslationModels =["NEMATUS","EASY_NMT"]
+
 LANGUAGE_STR_TO_INT_MAP = {'ru': 0,'de':1,'he':2}
 LANGUAGE_STR_MAP = {Language.RUSSIAN: "ru", Language.GERMAN: "de", Language.HEBREW: "he"}
 
@@ -65,16 +67,21 @@ def get_basic_configurations(config_str):
     config = parse_config(config_str)
     USE_DEBIASED = config["USE_DEBIASED"]
     LANGUAGE = config["LANGUAGE"]
-    COLLECT_EMBEDDING_TABLE = config["COLLECT_EMBEDDING_TABLE"]
+    if "COLLECT_EMBEDDING_TABLE" in config.keys():
+        COLLECT_EMBEDDING_TABLE = config["COLLECT_EMBEDDING_TABLE"]
+    else:
+        COLLECT_EMBEDDING_TABLE = None
     DEBIAS_METHOD = config["DEBIAS_METHOD"]
+    TRANSLATION_MODEL = config["TRANSLATION_MODEL"]
 
-    return USE_DEBIASED, LANGUAGE, COLLECT_EMBEDDING_TABLE, DEBIAS_METHOD
+    return USE_DEBIASED, LANGUAGE, COLLECT_EMBEDDING_TABLE, DEBIAS_METHOD, TRANSLATION_MODEL
 
 
 def get_debias_files_from_config(config_str):
     config = parse_config(config_str)
     lang = LANGUAGE_STR_MAP[Language(config['LANGUAGE'])]
     debias_method = str(config['DEBIAS_METHOD'])
+    translation_model = TranslationModels[int(config['TRANSLATION_MODEL'])]
 
     DICT_SIZE = param_dict[Language(int(config['LANGUAGE']))]["DICT_SIZE"]
 
@@ -88,10 +95,10 @@ def get_debias_files_from_config(config_str):
     EMBEDDING_TABLE_FILE = OUTPUTS_HOME + "en-" + lang + "/debias/embedding_table_" + lang + ".bin"
 
     # the file to which the initial (non debiased) embedding is written in the format of [word] [embedding]\n which is the format debiaswe uses. this is ready to be debiased
-    EMBEDDING_DEBIASWE_FILE = OUTPUTS_HOME + "en-" + lang + "/debias/embedding_debiaswe_" + lang + ".txt"
+    EMBEDDING_DEBIASWE_FILE = OUTPUTS_HOME + "en-" + lang + "/debias/embedding_debiaswe_" + lang +"_"+translation_model+ ".txt"
 
     # the file to which the debiased embedding table is saved at the end
-    DEBIASED_EMBEDDING = OUTPUTS_HOME + "en-" + lang + "/debias/Nematus-hard-debiased-" + lang + "-" + debias_method + ".txt"
+    DEBIASED_EMBEDDING = OUTPUTS_HOME + "en-" + lang + "/debias/Nematus-hard-debiased-" + lang + "-" + debias_method +"-"+translation_model+ ".txt"
 
     now = datetime.now()
     SANITY_CHECK_FILE = OUTPUTS_HOME + "en-" + lang + "/debias/sanity_check_" + now.strftime("%d-%m-%Y_%H-%M-%S") + ".csv"
@@ -103,11 +110,13 @@ def get_evaluate_gender_files(config_str):
     config = parse_config(config_str)
     lang = LANGUAGE_STR_MAP[Language(config['LANGUAGE'])]
     debias_method = str(config['DEBIAS_METHOD'])
+    translation_model = TranslationModels[int(config['TRANSLATION_MODEL'])]
+
     # the translations of anti sentences, using the debiased embedding table, with source line nums printed
-    ANTI_TRANSLATED_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/debiased_anti_" + debias_method + ".out.tmp"
+    ANTI_TRANSLATED_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/debiased_anti_" + debias_method +"_"+translation_model+ ".out.tmp"
 
     # the translations of anti sentences, using the non debiased embedding table, with source line nums printed
-    ANTI_TRANSLATED_NON_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/non_debiased_anti_" + debias_method + ".out.tmp"
+    ANTI_TRANSLATED_NON_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/non_debiased_anti_" + debias_method +"_"+translation_model+ ".out.tmp"
 
 
     # the full anti sentences in english (in the format <gender> <profession location> <sentence> <profession>)
@@ -115,10 +124,10 @@ def get_evaluate_gender_files(config_str):
 
 
     # file prepared to evaluation in the form of source_sentence ||| translated_sentence. translated using debiased embedding table
-    DEBIASED_EVAL = MT_GENDER_HOME + "translations/nematus/en-" + lang + "-debiased-"+debias_method+".txt"
+    DEBIASED_EVAL = MT_GENDER_HOME + "translations/nematus/en-" + lang + "-debiased-"+debias_method +"_"+translation_model+".txt"
 
     # file prepared to evaluation in the form of source_sentence ||| translated_sentence. translated using non debiased embedding table
-    NON_DEBIASED_EVAL = MT_GENDER_HOME + "translations/nematus//en-" + lang + "-non-debiased-"+debias_method+".txt"
+    NON_DEBIASED_EVAL = MT_GENDER_HOME + "translations/nematus//en-" + lang + "-non-debiased-"+debias_method +"_"+translation_model+".txt"
 
 
 
@@ -129,6 +138,7 @@ def get_evaluate_translation_files(config_str):
     config = parse_config(config_str)
     lang = LANGUAGE_STR_MAP[Language(config['LANGUAGE'])]
     debias_method = str(config['DEBIAS_METHOD'])
+    translation_model = TranslationModels[int(config['TRANSLATION_MODEL'])]
 
     # data of sentences for Bleu evaluation
     BLEU_SOURCE_DATA = param_dict[Language(int(config['LANGUAGE']))]["BLEU_SOURCE_DATA"]
@@ -137,10 +147,10 @@ def get_evaluate_translation_files(config_str):
     BLEU_GOLD_DATA = param_dict[Language(int(config['LANGUAGE']))]["BLEU_GOLD_DATA"]
 
     # the translations of the dataset sentences, using the debiased embedding table, with source line nums printed
-    TRANSLATED_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/debiased_" + debias_method + ".out.tmp"
+    TRANSLATED_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/debiased_" + debias_method + "_"+translation_model+".out.tmp"
 
     # the translations of the dataset sentences, using the non debiased embedding table, with source line nums printed
-    TRANSLATED_NON_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/non_debiased_" + debias_method + ".out.tmp"
+    TRANSLATED_NON_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/non_debiased_" + debias_method +"_"+translation_model+ ".out.tmp"
 
     return BLEU_SOURCE_DATA, BLEU_GOLD_DATA, TRANSLATED_DEBIASED, TRANSLATED_NON_DEBIASED
 
