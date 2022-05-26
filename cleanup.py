@@ -60,5 +60,5 @@ if __name__ == '__main__':
                 files_to_ignore)
     cleanup(["/cs/usr/bareluz/gabi_labs/nematus_clean/mt_gender/translations/nematus",
              "/cs/usr/bareluz/gabi_labs/nematus_clean/mt_gender/data/aggregates"],
-            ["en_anti.txt"])
+            ["en_anti.txt", "en_pro.txt", "en.txt"])
 

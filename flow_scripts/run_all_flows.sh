@@ -91,10 +91,11 @@ if [ $collect_embedding_table = true ]; then
 fi
 
 if [ "$model" == "0" ]; then
-
+  echo "running nematus flows"
   sh evaluate_gender_bias.sh -l ${language} -d ${debias_method} ${preprocess} ${translate}
   sh evaluate_translation.sh -l ${language} -d ${debias_method} ${translate}
 else
+    echo "running easyNMT flows"
   sh evaluate_gender_bias_easynmt.sh -l ${language} -d ${debias_method} ${preprocess} ${translate}
   sh evaluate_translation_easynmt.sh -l ${language} -d ${debias_method} ${translate}
 fi

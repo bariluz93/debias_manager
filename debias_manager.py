@@ -30,27 +30,45 @@ from sklearn.svm import LinearSVC, SVC
 sys.path.append("../../debias_files") # Adds higher directory to python modules path.
 
 from consts import get_debias_files_from_config, EMBEDDING_SIZE, DEFINITIONAL_FILE, PROFESSIONS_FILE, \
-    GENDER_SPECIFIC_FILE, EQUALIZE_FILE, get_basic_configurations, DebiasMethod
+    GENDER_SPECIFIC_FILE, EQUALIZE_FILE, get_basic_configurations, DebiasMethod, get_basic_configurations, TranslationModelsEnum, get_evaluate_gender_files
 
 sys.path.append("../..")  # Adds higher directory to python modules path.
 from nullspace_projection.src.debias import load_word_vectors, project_on_gender_subspaces, get_vectors, \
     get_debiasing_projection
 from nullspace_projection.notebooks.inlp_functions import tsne, compute_v_measure
-
 np.set_printoptions(suppress=True)
 
 
 class DebiasManager():
 
-    def __init__(self, consts_config_str):
+    def __init__(self, consts_config_str, non_debiased_embeddings=None, tokenizer=None):
         self.consts_config_str = consts_config_str
         self.DICT_SIZE, self.ENG_DICT_FILE, self.OUTPUT_TRANSLATE_FILE, self.EMBEDDING_TABLE_FILE, \
-        self.EMBEDDING_DEBIASWE_FILE, self.DEBIASED_EMBEDDING, self.SANITY_CHECK_FILE = get_debias_files_from_config(
-            consts_config_str)
-        self.non_debiased_embeddings = self.get_non_debiased_embedding_table()
+        self.EMBEDDING_DEBIASWE_FILE, self.DEBIASED_EMBEDDING, self.SANITY_CHECK_FILE = \
+            get_debias_files_from_config(consts_config_str)
+
+        _, _, _, _, self.TRANSLATION_MODEL = get_basic_configurations(consts_config_str)
+        _, _, _, _, _, self.EN_NEUTRAL_MT_GENDER = get_evaluate_gender_files(consts_config_str)
+        self.professions = self.get_all_professions()
+        if tokenizer is None:
+            with open(self.ENG_DICT_FILE, 'r') as dict_file:
+                self.dict = json.load(dict_file)
+        else:
+            self.dict = tokenizer.get_vocab()
+            tokenized_professions = []
+            for p in self.professions:
+                t = tokenizer.tokenize(p)
+                if len(t)==1:
+                    tokenized_professions.append(t[0])
+            self.professions = tokenized_professions
+        self.tokenizer = tokenizer
+        if non_debiased_embeddings is None:
+            self.non_debiased_embeddings = self.get_non_debiased_embedding_table()
+        else:
+            self.non_debiased_embeddings = non_debiased_embeddings
 
     @staticmethod
-    def get_manager_instance(consts_config_str):
+    def get_manager_instance(consts_config_str, non_debiased_embeddings=None, tokenizer=None):
         """
         gets a configuration dictionary of the current run, and extracts the debias method from it.
         according to the debias method returns the relevant debias manager instance.
@@ -59,9 +77,9 @@ class DebiasManager():
         """
         _, _, _, DEBIAS_METHOD, _ = get_basic_configurations(consts_config_str)
         if DebiasMethod(DEBIAS_METHOD) == DebiasMethod.BOLUKBASY:
-            return DebiasBlukbasyManager(consts_config_str)
+            return DebiasBlukbasyManager(consts_config_str, non_debiased_embeddings, tokenizer)
         elif DebiasMethod(DEBIAS_METHOD) == DebiasMethod.NULL_IT_OUT:
-            return DebiasINLPManager(consts_config_str)
+            return DebiasINLPManager(consts_config_str, non_debiased_embeddings, tokenizer)
         else:
             raise Exception("the debias method is incorrect")
 
@@ -87,6 +105,13 @@ class DebiasManager():
         print("all lines exist?: " + str(not lines_count.__contains__(0)))
         return not lines_count.__contains__(0)
 
+    def get_all_professions(self):
+        professions = set()
+        with open(self.EN_NEUTRAL_MT_GENDER, 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            professions.add((line.split("\t")[-1]).strip())
+        return list(professions)
     def get_non_debiased_embedding_table(self):
         """
         if the embedding table , printed in translate run, contains all lines, creates a matrix with the right order of
@@ -180,7 +205,7 @@ class DebiasManager():
             embedding_table = np.vstack([embedding_table, self.non_debiased_embeddings[-1]])
         return np.array(embedding_table).astype(np.float32)
 
-    def __print_bias_amount(self, word, gender_direction, orig_embedding, debiased_embedding=None, index = None):
+    def __print_bias_amount(self, word, gender_direction, orig_embedding, debiased_embedding=None):
         """
         prints the bias of a word according to the gender direction before and after debias.
         the bias amount is in the range of -1 to 1 where 0 is neutral and the edges are male and female bias.
@@ -190,58 +215,55 @@ class DebiasManager():
         :param debiased_embedding: debiased embedding table as numpy array
         :param orig_embedding: non debiased embedding table as numpy array
         """
-        if index is None:
-            with open(self.ENG_DICT_FILE, 'r') as dict_file:
-                index = json.load(dict_file)
         f = open(self.SANITY_CHECK_FILE, 'a')
         writer = csv.writer(f)
         word = "▁"+word
-        if word in index:
-            word_index = index[word]
+        if word in self.dict:
+            word_index = self.dict[word]
             if debiased_embedding:
 
                 bias_before = np.dot(orig_embedding[word_index], gender_direction)
                 bias_after = np.dot(debiased_embedding[word_index], gender_direction)
                 writer.writerow([word, bias_before, bias_after])
 
-                bieas_before = '{:.20f}'.format(bias_before)
-                bias_after = '{:.20f}'.format(bias_after)
-                print(word + ": bias before debias= " + bieas_before + ". bias after debias= " + bias_after)
+                # bieas_before = '{:.20f}'.format(bias_before)
+                # bias_after = '{:.20f}'.format(bias_after)
+                # print(word + ": bias before debias= " + bieas_before + ". bias after debias= " + bias_after)
 
             else:
                 bias_before = np.dot(orig_embedding[word_index], gender_direction)
 
                 writer.writerow([word, bias_before])
-                bieas_before = '{:.20f}'.format(bias_before)
-                print(word + ": bias= " + bieas_before )
+                # bieas_before = '{:.20f}'.format(bias_before)
+                # print(word + ": bias= " + bieas_before )
         f.close()
 
-    def sanity_check_origin_embedding(self, index, embedding_table):
-        """
-        prints the bias amount before and after debias for words that describes profession, and gender specific words
-        the biases are also printed to a csv file
-        :param debiased_embedding_table:
-        :return:
-        """
-        print("*******************sanity check**************************")
-
-        gender_direction = self.get_gender_direction(index, embedding_table)
-        with open(PROFESSIONS_FILE, "r") as f:
-            professions = json.load(f)
-        with open(self.SANITY_CHECK_FILE, 'wt') as f:
-            writer = csv.writer(f)
-            writer.writerow(["word", "bias after"])
-        print("--------professions--------")
-        for p in professions:
-            self.__print_bias_amount(p[0], gender_direction, embedding_table, index=index)
-
-        with open(DEFINITIONAL_FILE, "r") as f:
-            defs = json.load(f)
-        print("--------gender specific--------")
-        for a, b in defs:
-            self.__print_bias_amount(a, gender_direction, embedding_table, index=index)
-            self.__print_bias_amount(b, gender_direction, embedding_table, index=index)
-        print("********************************************************")
+    # def sanity_check_origin_embedding(self, index, embedding_table):
+    #     """
+    #     prints the bias amount before and after debias for words that describes profession, and gender specific words
+    #     the biases are also printed to a csv file
+    #     :param debiased_embedding_table:
+    #     :return:
+    #     """
+    #     # print("*******************sanity check**************************")
+    #
+    #     gender_direction = self.get_gender_direction(index, embedding_table)
+    #     with open(PROFESSIONS_FILE, "r") as f:
+    #         professions = json.load(f)
+    #     with open(self.SANITY_CHECK_FILE, 'wt') as f:
+    #         writer = csv.writer(f)
+    #         writer.writerow(["word", "bias after"])
+    #     # print("--------professions--------")
+    #     for p in professions:
+    #         self.__print_bias_amount(p[0], gender_direction, embedding_table)
+    #
+    #     with open(DEFINITIONAL_FILE, "r") as f:
+    #         defs = json.load(f)
+    #     # print("--------gender specific--------")
+    #     for a, b in defs:
+    #         self.__print_bias_amount(a, gender_direction, embedding_table)
+    #         self.__print_bias_amount(b, gender_direction, embedding_table)
+    #     # print("********************************************************")
 
     def debias_sanity_check(self, debiased_embedding_table=None):
         """
@@ -250,7 +272,7 @@ class DebiasManager():
         :param debiased_embedding_table:
         :return:
         """
-        print("*******************sanity check**************************")
+        # print("*******************sanity check**************************")
         if debiased_embedding_table is None:
             debiased_embedding_table = self.load_debias_format_to_array(self.DEBIASED_EMBEDDING)
         debiased_embedding_table = debiased_embedding_table.astype('float32')
@@ -263,43 +285,43 @@ class DebiasManager():
         with open(self.SANITY_CHECK_FILE, 'wt') as f:
             writer = csv.writer(f)
             writer.writerow(["word", "bias before", "bias after"])
-        print("--------professions--------")
+        # print("--------professions--------")
         for p in professions:
-            self.__print_bias_amount(p[0], gender_direction,  orig_embedding, debiased_embedding_table,)
+            self.__print_bias_amount(p[0], gender_direction,  orig_embedding, debiased_embedding_table)
 
         with open(DEFINITIONAL_FILE, "r") as f:
             defs = json.load(f)
-        print("--------gender specific--------")
+        # print("--------gender specific--------")
         for a, b in defs:
             self.__print_bias_amount(a, gender_direction,  orig_embedding, debiased_embedding_table)
             self.__print_bias_amount(b, gender_direction, orig_embedding, debiased_embedding_table)
-        print("********************************************************")
+        # print("********************************************************")
 
-    def get_gender_direction(self, index= None, embedding_table = None ):
-        """
-        :return: a vector represents the gender direction
-        """
-        if embedding_table is None and index is None:
-            raise NotImplementedError()
-        embedding_table = np.array(embedding_table)
-        gender_direction = embedding_table[index["▁he"]] - embedding_table[index["▁she"]]
-        return gender_direction
+    # def get_gender_direction(self, index= None, embedding_table = None ):
+    #     """
+    #     :return: a vector represents the gender direction
+    #     """
+    #     if embedding_table is None and index is None:
+    #         raise NotImplementedError()
+    #     embedding_table = np.array(embedding_table)
+    #     gender_direction = embedding_table[index["▁he"]] - embedding_table[index["▁she"]]
+    #     return gender_direction
 
-    def prepare_data_to_debias(self, dict = None, embeddings=None):
-        """
-        given path to dictionary, the path to the embedding table saved in get_embedding_table() and the file name to save the data,
-        it prepares the embedding table in the format of <word> <embedding>/n , this is the format that debias() in debiaswe, uses.
-        saves the embedding with the desired format to self.EMBEDDING_DEBIASWE_FILE
-        """
-        if dict is None:
-            with open(self.ENG_DICT_FILE, 'r') as dict_file:
-                dict = json.load(dict_file)
-        if embeddings is None:
-            embeddings = self.non_debiased_embeddings
-        embeddings = np.array(embeddings)
-        with open(self.EMBEDDING_DEBIASWE_FILE, 'w') as dest_file:
-            for w, i in dict.items():
-                dest_file.write(w + " " + ' '.join(map(str, embeddings[i, :])) + "\n")
+    # def prepare_data_to_debias(self, dict = None, embeddings=None):
+    #     """
+    #     given path to dictionary, the path to the embedding table saved in get_embedding_table() and the file name to save the data,
+    #     it prepares the embedding table in the format of <word> <embedding>/n , this is the format that debias() in debiaswe, uses.
+    #     saves the embedding with the desired format to self.EMBEDDING_DEBIASWE_FILE
+    #     """
+    #     if dict is None:
+    #         with open(self.ENG_DICT_FILE, 'r') as dict_file:
+    #             dict = json.load(dict_file)
+    #     if embeddings is None:
+    #         embeddings = self.non_debiased_embeddings
+    #     embeddings = np.array(embeddings)
+    #     with open(self.EMBEDDING_DEBIASWE_FILE, 'w') as dest_file:
+    #         for w, i in dict.items():
+    #             dest_file.write(w + " " + ' '.join(map(str, embeddings[i, :])) + "\n")
 
     def debias_embedding_table(self):
         """
@@ -309,36 +331,33 @@ class DebiasManager():
         raise NotImplementedError()
 
     def save(self, debiased_embeddings):
-        with open(self.ENG_DICT_FILE, 'r') as dict_file, open(self.DEBIASED_EMBEDDING, "w") as f:
-            eng_dictionary = json.load(dict_file)
-            for w, i in eng_dictionary.items():
+        with open(self.DEBIASED_EMBEDDING, "w") as f:
+            # eng_dictionary = json.load(dict_file)
+            for w, i in self.dict.items():
                 f.write(w + " " + ' '.join(map(str, debiased_embeddings[i, :])) + "\n")
         # with open(filename, "w") as f:
         #     f.write("\n".join([w+" " + " ".join([str(x) for x in v]) for w, v in zip(self.words, self.vecs)]))
         print("Wrote debiased embeddings to", self.DEBIASED_EMBEDDING)
 
 class DebiasINLPManager(DebiasManager):
-    def __init__(self, consts_config_str):
-        super().__init__(consts_config_str)
+    def __init__(self, consts_config_str, non_debiased_embeddings=None, tokenizer=None):
+        super().__init__(consts_config_str, non_debiased_embeddings, tokenizer)
         self.prepare_data_to_debias()
         self.by_pca = False
 
-    def prepare_data_to_debias(self, dict = None, embeddings=None):
+    def prepare_data_to_debias(self, embeddings=None):
         """
         given path to dictionary, the path to the embedding table saved in get_embedding_table() and the file name to save the data,
         it prepares the embedding table in the format of <word> <embedding>/n , this is the format that debias() in debiaswe, uses.
         saves the embedding with the desired format to self.EMBEDDING_DEBIASWE_FILE
         """
-        if dict is None:
-            with open(self.ENG_DICT_FILE, 'r') as dict_file:
-                dict = json.load(dict_file)
         if embeddings is None:
             embeddings = self.non_debiased_embeddings
-
+        embeddings = np.array(embeddings)
         with open(self.EMBEDDING_DEBIASWE_FILE, 'w') as dest_file:
             s = np.shape(embeddings)
             dest_file.write(str(s[0]) + " " + str(s[1]) + "\n")
-            for w, i in dict.items():
+            for w, i in self.dict.items():
                 dest_file.write(w + " " + ' '.join(map(str, embeddings[i, :])) + "\n")
 
 
@@ -350,6 +369,10 @@ class DebiasINLPManager(DebiasManager):
             pairs = [("woman", "man"), ("girl", "boy"), ("she", "he"), ("mother", "father"),
                      ("daughter", "son"), ("gal", "guy"), ("female", "male"), ("her", "his"),
                      ("herself", "himself"), ("Mary", "John")]
+            if self.tokenizer is not None:
+                for i in range(len(pairs)):
+                    a,b =pairs[i]
+                    pairs[i] = (self.tokenizer.tokenize(a)[0], self.tokenizer.tokenize(b)[0])
             # pairs = [("male", "female"), ("masculine", "feminine"), ("he", "she"), ("him", "her")]
             gender_vecs = [self.model[p[0]] - self.model[p[1]] for p in pairs]
             pca = PCA(n_components=1)
@@ -357,7 +380,11 @@ class DebiasINLPManager(DebiasManager):
             gender_direction = pca.components_[0]
 
         else:
-            gender_direction = self.model["he"] - self.model["she"]
+            if self.tokenizer is not None:
+                gender_direction = self.model[self.tokenizer.tokenize("he")[0]] - self.model[self.tokenizer.tokenize("she")[0]]
+            else:
+                gender_direction = self.model["he"] - self.model["she"]
+
         return gender_direction
 
     def debias_inlp_preparation(self):
@@ -451,8 +478,11 @@ class DebiasINLPManager(DebiasManager):
         min_acc = 0
         is_autoregressive = True
         dropout_rate = 0
-
-        P, rowspace_projs, Ws = get_debiasing_projection(gender_clf, params, n, 256, is_autoregressive, min_acc,
+        if self.TRANSLATION_MODEL == TranslationModelsEnum.NEMATUS:
+            input_dim =256
+        else:
+            input_dim =512
+        P, rowspace_projs, Ws = get_debiasing_projection(gender_clf, params, n, input_dim, is_autoregressive, min_acc,
                                                          X_train, Y_train, X_dev, Y_dev,
                                                          Y_train_main=None, Y_dev_main=None,
                                                          by_class=False, dropout_rate=dropout_rate)
@@ -463,34 +493,36 @@ class DebiasINLPManager(DebiasManager):
 
 
 class DebiasBlukbasyManager(DebiasManager):
-    def __init__(self, consts_config_str):
-        super().__init__(consts_config_str)
+    def __init__(self, consts_config_str, non_debiased_embeddings=None, tokenizer=None):
+        super().__init__(consts_config_str, non_debiased_embeddings, tokenizer)
         # self.E = None
         self.prepare_data_to_debias()
         self.E = we.WordEmbedding(self.EMBEDDING_DEBIASWE_FILE)
 
-    # def prepare_data_to_debias(self, dict = None, embeddings=None):
-    #     """
-    #     given path to dictionary, the path to the embedding table saved in get_embedding_table() and the file name to save the data,
-    #     it prepares the embedding table in the format of <word> <embedding>/n , this is the format that debias() in debiaswe, uses.
-    #     saves the embedding with the desired format to self.EMBEDDING_DEBIASWE_FILE
-    #     """
-    #     if dict is None:
-    #         with open(self.ENG_DICT_FILE, 'r') as dict_file:
-    #             dict = json.load(dict_file)
-    #     if embeddings is None:
-    #         embeddings = self.non_debiased_embeddings
-    #
-    #     with open(self.EMBEDDING_DEBIASWE_FILE, 'w') as dest_file:
-    #         for w, i in dict.items():
-    #             dest_file.write(w + " " + ' '.join(map(str, embeddings[i, :])) + "\n")
+    def prepare_data_to_debias(self, embeddings=None):
+        """
+        given path to dictionary, the path to the embedding table saved in get_embedding_table() and the file name to save the data,
+        it prepares the embedding table in the format of <word> <embedding>/n , this is the format that debias() in debiaswe, uses.
+        saves the embedding with the desired format to self.EMBEDDING_DEBIASWE_FILE
+        """
+        if embeddings is None:
+            embeddings = self.non_debiased_embeddings
+        embeddings = np.array(embeddings)
+        with open(self.EMBEDDING_DEBIASWE_FILE, 'w') as dest_file:
+            for w, i in self.dict.items():
+                dest_file.write(w + " " + ' '.join(map(str, embeddings[i, :])) + "\n")
+
 
     def get_gender_direction(self):
         """
         :return: a vector represents the gender direction
         """
+
         with open(DEFINITIONAL_FILE, "r") as f:
             defs = json.load(f)
+            if self.tokenizer is not None:
+                tokenized_defs = [[self.tokenizer.tokenize(w[0])[0], self.tokenizer.tokenize(w[1])[0]] for w in defs]
+                defs = tokenized_defs
         return we.doPCA(defs, self.E).components_[0]
 
     def debias_embedding_table(self):
@@ -502,6 +534,9 @@ class DebiasBlukbasyManager(DebiasManager):
         # self.E = we.WordEmbedding(self.EMBEDDING_DEBIASWE_FILE)
         with open(DEFINITIONAL_FILE, "r") as f:
             defs = json.load(f)
+        if self.tokenizer is not None:
+                tokenized_defs = [[self.tokenizer.tokenize(w[0])[0], self.tokenizer.tokenize(w[1])[0]] for w in defs]
+                defs = tokenized_defs
         print("definitional", defs)
 
         with open(EQUALIZE_FILE, "r") as f:
@@ -514,7 +549,7 @@ class DebiasBlukbasyManager(DebiasManager):
         if self.E is None:
             raise Exception("WordEmbedding E was not created")
         print("Debiasing...")
-        debias(self.E, gender_specific_words, defs, equalize_pairs)
+        debias(self.E, gender_specific_words, defs, equalize_pairs, self.professions)
 
         print("Saving to file...")
         self.save(self.E.vecs)

@@ -15,7 +15,9 @@ class Language(Enum):
     HEBREW = 2
 
 TranslationModels =["NEMATUS","EASY_NMT"]
-
+class TranslationModelsEnum(Enum):
+    NEMATUS = 0
+    EASY_NMT = 1
 LANGUAGE_STR_TO_INT_MAP = {'ru': 0,'de':1,'he':2}
 LANGUAGE_STR_MAP = {Language.RUSSIAN: "ru", Language.GERMAN: "de", Language.HEBREW: "he"}
 
@@ -121,6 +123,8 @@ def get_evaluate_gender_files(config_str):
 
     # the full anti sentences in english (in the format <gender> <profession location> <sentence> <profession>)
     EN_ANTI_MT_GENDER = MT_GENDER_HOME + "data/aggregates/en_anti.txt"
+    # the full sentences in english (in the format <gender> <profession location> <sentence> <profession>)
+    EN_NEUTRAL_MT_GENDER = MT_GENDER_HOME + "data/aggregates/en.txt"
 
 
     # file prepared to evaluation in the form of source_sentence ||| translated_sentence. translated using debiased embedding table
@@ -131,7 +135,7 @@ def get_evaluate_gender_files(config_str):
 
 
 
-    return ANTI_TRANSLATED_DEBIASED, ANTI_TRANSLATED_NON_DEBIASED, DEBIASED_EVAL, NON_DEBIASED_EVAL, EN_ANTI_MT_GENDER
+    return ANTI_TRANSLATED_DEBIASED, ANTI_TRANSLATED_NON_DEBIASED, DEBIASED_EVAL, NON_DEBIASED_EVAL, EN_ANTI_MT_GENDER, EN_NEUTRAL_MT_GENDER
 
 
 def get_evaluate_translation_files(config_str):

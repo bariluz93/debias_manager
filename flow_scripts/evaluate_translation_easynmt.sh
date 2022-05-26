@@ -61,34 +61,28 @@ scripts_dir=`pwd`
 source ${scripts_dir}/consts.sh ${language} ${debias_method} 1
 
 #################### translate some dataset to test translation quality ####################
-outputh_path_debiased=${debias_outputs_dir}/${language_dir}/output/debiased_${debias_method}_NEMATUS.out.tmp
-outputh_path_non_debiased=${debias_outputs_dir}/${language_dir}/output/non_debiased_${debias_method}_NEMATUS.out.tmp
-#echo "outputh_path_debiased: ${outputh_path_debiased}"
-#echo "outputh_path_non_debiased: ${outputh_path_non_debiased}"
-config_debiased="{'USE_DEBIASED': 1, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 0}"
-config_non_debiased="{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 0}"
+outputh_path_debiased=${debias_outputs_dir}/${language_dir}/output/debiased_${debias_method}_${model_str}.out.tmp
+outputh_path_non_debiased=${debias_outputs_dir}/${language_dir}/output/non_debiased_${debias_method}_${model_str}.out.tmp
+config_debiased="{'USE_DEBIASED': 1, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 1}"
+config_non_debiased="{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 1}"
 
 if [ $translate = true ]; then
   echo "#################### translate debiased ####################"
 #  echo "python ${nematus_dir}/nematus/translate.py -i $input_path -m  $model_dir -k 12 -n -o ${outputh_path_debiased} -c ${config_debiased}"
-  python ${nematus_dir}/nematus/translate.py \
+  python ${debias_files_dir}/translate_easynmt.py \
        -i "$input_path" \
-       -m "$model_dir" \
-       -k 12 -n -o "${outputh_path_debiased}" -c "${config_debiased}"
+       -o "${outputh_path_debiased}" \
+       -c "${config_debiased}"
 
   echo "#################### translate non debiased ####################"
-  python ${nematus_dir}/nematus/translate.py \
+  python ${debias_files_dir}/translate_easynmt.py \
        -i "$input_path" \
-       -m  "$model_dir" \
-       -k 12 -n -o "${outputh_path_non_debiased}" -c "${config_non_debiased}"
+       -o "${outputh_path_non_debiased}" \
+       -c "${config_non_debiased}"
 fi
-#echo "#################### merge_translations ####################"
-#python ${nematus_dir}/merge_translations.py \
-#     -c "{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}}" \
-#     -e 1
 echo "#################### evaluate translation quality ####################"
 output_result_path=${debias_outputs_dir}/${language_dir}/debias/translation_evaluation_${dst_language}_${debias_method}_${model_str}.txt
 exec > ${output_result_path}
 exec 2>&1
 python ${project_dir}/mt_gender/src/evaluate_translation.py \
-     -c "{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 0}"
+     -c "{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 1}"

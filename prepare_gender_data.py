@@ -34,7 +34,7 @@ if __name__ == '__main__':
                  "print_line_nums= whether to print line numbers to output file in translate")
     args = parser.parse_args()
     ANTI_TRANSLATED_DEBIASED, ANTI_TRANSLATED_NON_DEBIASED, DEBIASED_EVAL, \
-    NON_DEBIASED_EVAL, EN_ANTI_MT_GENDER = get_evaluate_gender_files(args.config_str)
+    NON_DEBIASED_EVAL, EN_ANTI_MT_GENDER, EN_NEUTRAL_MT_GENDER = get_evaluate_gender_files(args.config_str)
     # detokenize_file(EN_ANTI_MERGED,EN_ANTI_MERGED_DETOKENIZED)
     # parse_gender_sents(EN_ANTI, EN_ANTI_PARSED)
     prepare_gender_sents_translation_to_evaluation(EN_ANTI_MT_GENDER, ANTI_TRANSLATED_DEBIASED, DEBIASED_EVAL, parse_config(args.config_str)["LANGUAGE"])
