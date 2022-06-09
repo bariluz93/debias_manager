@@ -29,9 +29,7 @@ class DebiasMethod(Enum):
 
 EMBEDDING_SIZE = 256
 PROJECT_HOME = "/cs/labs/gabis/bareluz/nematus_clean/"
-NEMATUS_HOME = "/cs/labs/gabis/bareluz/nematus_clean/nematus/"
 DEBIAS_FILES_HOME = "/cs/usr/bareluz/gabi_labs/nematus_clean/debias_files/"
-PREPROCESS_HOME = "/cs/snapless/oabend/borgr/SSMT/preprocess/data/"
 MT_GENDER_HOME = "/cs/usr/bareluz/gabi_labs/nematus_clean/mt_gender/"
 DATA_HOME = "/cs/snapless/gabis/bareluz/data/"
 OUTPUTS_HOME = "/cs/usr/bareluz/gabi_labs/nematus_clean/debias_outputs/"
@@ -40,23 +38,23 @@ param_dict = {
         {
             "DICT_SIZE": 30648,
             "ENG_DICT_FILE": DATA_HOME + "en_ru_30.11.20//train.clean.unesc.tok.tc.bpe.en.json",
-            "BLEU_SOURCE_DATA": DATA_HOME + "en_ru_30.11.20/newstest2019-enru.unesc.tok.tc.bpe.en",
             "BLEU_GOLD_DATA": DATA_HOME + "en_ru_30.11.20/newstest2019-enru.unesc.tok.tc.bpe.ru",
+            "BLEU_GOLD_DATA_NON_TOKENIZED": DATA_HOME + "en_ru_30.11.20/newstest2019-enru.ru",
 
         },
     Language.GERMAN:
         {
             "DICT_SIZE": 29344,
             "ENG_DICT_FILE": DATA_HOME + "en_de_5.8/train.clean.unesc.tok.tc.bpe.en.json",
-            "BLEU_SOURCE_DATA": DATA_HOME + "en_de_5.8/newstest2012.unesc.tok.tc.bpe.en",
             "BLEU_GOLD_DATA": DATA_HOME + "en_de_5.8/newstest2012.unesc.tok.tc.bpe.de",
+            "BLEU_GOLD_DATA_NON_TOKENIZED": DATA_HOME + "en_de_5.8/newstest2012.de",
         },
     Language.HEBREW:
         {
             "DICT_SIZE": 30545,
             "ENG_DICT_FILE": DATA_HOME + "en_he_20.07.21//train.clean.unesc.tok.tc.bpe.en.json",
-            "BLEU_SOURCE_DATA": DATA_HOME + "en_he_20.07.21//dev.unesc.tok.tc.bpe.en",
             "BLEU_GOLD_DATA": DATA_HOME + "en_he_20.07.21//dev.unesc.tok.bpe.he",
+            "BLEU_GOLD_DATA_NON_TOKENIZED": DATA_HOME + "en_he_20.07.21//dev.he",
         }
 }
 
@@ -100,7 +98,7 @@ def get_debias_files_from_config(config_str):
     EMBEDDING_DEBIASWE_FILE = OUTPUTS_HOME + "en-" + lang + "/debias/embedding_debiaswe_" + lang +"_"+translation_model+ ".txt"
 
     # the file to which the debiased embedding table is saved at the end
-    DEBIASED_EMBEDDING = OUTPUTS_HOME + "en-" + lang + "/debias/Nematus-hard-debiased-" + lang + "-" + debias_method +"-"+translation_model+ ".txt"
+    DEBIASED_EMBEDDING = OUTPUTS_HOME + "en-" + lang + "/debias/hard-debiased-" + lang + "-" + debias_method +"-"+translation_model+ ".txt"
 
     now = datetime.now()
     SANITY_CHECK_FILE = OUTPUTS_HOME + "en-" + lang + "/debias/sanity_check_" + now.strftime("%d-%m-%Y_%H-%M-%S") + ".csv"
@@ -144,11 +142,11 @@ def get_evaluate_translation_files(config_str):
     debias_method = str(config['DEBIAS_METHOD'])
     translation_model = TranslationModels[int(config['TRANSLATION_MODEL'])]
 
-    # data of sentences for Bleu evaluation
-    BLEU_SOURCE_DATA = param_dict[Language(int(config['LANGUAGE']))]["BLEU_SOURCE_DATA"]
-
     # data of the gold translation sentences for Bleu evaluation
     BLEU_GOLD_DATA = param_dict[Language(int(config['LANGUAGE']))]["BLEU_GOLD_DATA"]
+
+    # data of the gold translation sentences for Bleu evaluation
+    BLEU_GOLD_DATA_NON_TOKENIZED = param_dict[Language(int(config['LANGUAGE']))]["BLEU_GOLD_DATA_NON_TOKENIZED"]
 
     # the translations of the dataset sentences, using the debiased embedding table, with source line nums printed
     TRANSLATED_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/debiased_" + debias_method + "_"+translation_model+".out.tmp"
@@ -156,7 +154,7 @@ def get_evaluate_translation_files(config_str):
     # the translations of the dataset sentences, using the non debiased embedding table, with source line nums printed
     TRANSLATED_NON_DEBIASED = OUTPUTS_HOME + "en-" + lang + "/output/non_debiased_" + debias_method +"_"+translation_model+ ".out.tmp"
 
-    return BLEU_SOURCE_DATA, BLEU_GOLD_DATA, TRANSLATED_DEBIASED, TRANSLATED_NON_DEBIASED
+    return BLEU_GOLD_DATA,BLEU_GOLD_DATA_NON_TOKENIZED, TRANSLATED_DEBIASED, TRANSLATED_NON_DEBIASED
 
 
 #################debiaswe files#################

@@ -507,7 +507,10 @@ class DebiasBlukbasyManager(DebiasManager):
         """
         if embeddings is None:
             embeddings = self.non_debiased_embeddings
-        embeddings = np.array(embeddings)
+        try:
+            embeddings = embeddings.cpu().data.numpy()
+        except:
+            embeddings = np.array(embeddings)
         with open(self.EMBEDDING_DEBIASWE_FILE, 'w') as dest_file:
             for w, i in self.dict.items():
                 dest_file.write(w + " " + ' '.join(map(str, embeddings[i, :])) + "\n")

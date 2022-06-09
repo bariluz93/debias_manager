@@ -1,7 +1,7 @@
 from easynmt import EasyNMT
 from sacrebleu.metrics import BLEU
 from detokenize import detokenize_matrix
-from consts import get_debias_files_from_config, EMBEDDING_SIZE, DEFINITIONAL_FILE, PROFESSIONS_FILE, \
+from consts import get_debias_files_from_config, DEFINITIONAL_FILE, PROFESSIONS_FILE, \
     GENDER_SPECIFIC_FILE, EQUALIZE_FILE, get_basic_configurations, DebiasMethod, DEBIAS_FILES_HOME, DATA_HOME
 model = EasyNMT('opus-mt')
 ru_data = DATA_HOME + "en_ru_30.11.20/newstest2019-enru.en"
