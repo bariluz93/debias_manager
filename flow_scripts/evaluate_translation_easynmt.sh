@@ -84,5 +84,5 @@ echo "#################### evaluate translation quality ####################"
 output_result_path=${debias_outputs_dir}/${language_dir}/debias/translation_evaluation_${dst_language}_${debias_method}_${model_str}.txt
 exec > ${output_result_path}
 exec 2>&1
-python ${project_dir}/mt_gender/src/evaluate_translation.py \
+python ${debias_files_dir}/evaluate_translation.py \
      -c "{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 1}"
