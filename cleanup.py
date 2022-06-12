@@ -58,7 +58,8 @@ if __name__ == '__main__':
                  "/cs/usr/bareluz/gabi_labs/nematus_clean/debias_outputs/en-"+language +"/evaluate",
                  "/cs/usr/bareluz/gabi_labs/nematus_clean/debias_outputs/en-"+language +"/output",],
                 files_to_ignore)
-    cleanup(["/cs/usr/bareluz/gabi_labs/nematus_clean/mt_gender/translations/nematus",
+    cleanup(["/cs/usr/bareluz/gabi_labs/nematus_clean/mt_gender/translations/NEMATUS",
+             "/cs/usr/bareluz/gabi_labs/nematus_clean/mt_gender/translations/EASY_NMT",
              "/cs/usr/bareluz/gabi_labs/nematus_clean/mt_gender/data/aggregates"],
             ["en_anti.txt", "en_pro.txt", "en.txt"])
 

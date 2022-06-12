@@ -8,14 +8,16 @@ set -e
 #SBATCH --output=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/slurm/evaluate_gender_bias-%j.out
 echo "**************************************** in evaluate_gender_bias.sh ****************************************"
 
-SHORT=l:,d:,p,t,h
-LONG=language:,debias_method:,preprocess,translate,help
+SHORT=l:,d:,p,t,tnd,h
+LONG=language:,debias_method:,preprocess,translate,translate_non_debiased,help
 OPTS=$(getopt -a -n debias --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
 
 preprocess=false
 translate=false
+translate_non_debiased=false
+
 while :
 do
   case "$1" in
@@ -35,15 +37,20 @@ do
       translate=true
       shift 1
       ;;
+    -tnd | --translate_non_debiased )
+      translate_non_debiased=true
+      shift 1
+      ;;
     -h | --help)
       echo "usage:
 Mandatory arguments:
-  -l, --language                  the destination translation language .
-  -d, --debias_method             the debias method .
+  -l, --language                                 the destination translation language .
+  -d, --debias_method                            the debias method .
 Optional arguments:
-  -p, --preprocess                preprocess the anti dataset .
-  -t, --translate                 translate the entire dataset .
-  -h, --help                      help message ."
+  -p, --preprocess                               preprocess the anti dataset .
+  -t, --translate                                translate the entire dataset .
+  -tnd, --translate_non_debiased                 translate the entire dataset .
+  -h, --help                                     help message ."
       exit 2
       ;;
     --)
@@ -84,17 +91,17 @@ config_non_debiased="{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_E
 
 if [ $translate = true ]; then
   echo "#################### translate anti debias ####################"
-#  echo "python ${nematus_dir}/nematus/translate.py -i ${input_path} -m ${model_dir} -k 12 -n -o ${outputh_path_debiased} -c ${config_debiased}"
   python ${nematus_dir}/nematus/translate.py \
        -i "$input_path" \
        -m "$model_dir" \
        -k 12 -n -o "${outputh_path_debiased}" -c "${config_debiased}"
   echo "#################### translate anti non debias ####################"
-#  echo "python ${nematus_dir}/nematus/translate.py -i ${input_path} -m ${model_dir} -k 12 -n -o ${outputh_path_non_debiased} -c ${config_non_debiased}"
-  python ${nematus_dir}/nematus/translate.py \
-       -i "$input_path" \
-       -m "$model_dir" \
-       -k 12 -n -o "${outputh_path_non_debiased}" -c "${config_non_debiased}"
+  if [ $translate_non_debiased = true ]; then
+    python ${nematus_dir}/nematus/translate.py \
+         -i "$input_path" \
+         -m "$model_dir" \
+         -k 12 -n -o "${outputh_path_non_debiased}" -c "${config_non_debiased}"
+  fi
 fi
 
 
@@ -112,7 +119,9 @@ exec 2>&1
 cd ${mt_gender_dir}
 source venv/bin/activate
 cd src
-sh ../scripts/evaluate_debiased.sh ${language} ${debias_method} ${model_str}
+export FAST_ALIGN_BASE=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/fast_align
+./../scripts/evaluate_language.sh ../data/aggregates/en_anti.txt ${language} ${model_str} ${debias_method}
+#sh ../scripts/evaluate_debiased.sh ${language} ${debias_method} ${model_str}
 
 
 

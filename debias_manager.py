@@ -25,6 +25,7 @@ from sklearn.decomposition import PCA
 import sklearn
 import random
 from sklearn.svm import LinearSVC, SVC
+import copy
 
 # sys.path.append("..")  # Adds higher directory to python modules path.
 sys.path.append("../../debias_files") # Adds higher directory to python modules path.
@@ -453,7 +454,7 @@ class DebiasINLPManager(DebiasManager):
                                                                                   random_state=0)
         print("Train size: {}; Dev size: {}; Test size: {}".format(X_train.shape[0], X_dev.shape[0], X_test.shape[0]))
         return X_dev, Y_dev, X_train, Y_train, X_test, Y_test, all_significantly_biased_vecs, \
-               all_significantly_biased_labels, vecs
+               all_significantly_biased_labels, vecs,words
 
     def debias_embedding_table(self):
         """
@@ -462,7 +463,7 @@ class DebiasINLPManager(DebiasManager):
         """
         # self.load_and_prepare_embedding_table()
         X_dev, Y_dev, X_train, Y_train, X_test, Y_test, all_significantly_biased_vecs, \
-        all_significantly_biased_labels, vecs = self.debias_inlp_preparation()
+        all_significantly_biased_labels, vecs, words = self.debias_inlp_preparation()
         gender_clf = LinearSVC
         # gender_clf = SGDClassifier
         # gender_clf = LogisticRegression
@@ -487,6 +488,9 @@ class DebiasINLPManager(DebiasManager):
                                                          Y_train_main=None, Y_dev_main=None,
                                                          by_class=False, dropout_rate=dropout_rate)
 
+        # professions_indices = np.searchsorted(words, self.professions)
+        # debiased_embeddings = copy.deepcopy(vecs)
+        # debiased_embeddings[professions_indices] = (P.dot(debiased_embeddings[professions_indices].T)).T
         debiased_embeddings = (P.dot(vecs.T)).T
         self.save(debiased_embeddings)
         return debiased_embeddings

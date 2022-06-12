@@ -126,10 +126,10 @@ def get_evaluate_gender_files(config_str):
 
 
     # file prepared to evaluation in the form of source_sentence ||| translated_sentence. translated using debiased embedding table
-    DEBIASED_EVAL = MT_GENDER_HOME + "translations/nematus/en-" + lang + "-debiased-"+debias_method +"_"+translation_model+".txt"
+    DEBIASED_EVAL = MT_GENDER_HOME + "translations/"+translation_model+"/en-" + lang + "-debiased-"+debias_method +"_"+translation_model+".txt"
 
     # file prepared to evaluation in the form of source_sentence ||| translated_sentence. translated using non debiased embedding table
-    NON_DEBIASED_EVAL = MT_GENDER_HOME + "translations/nematus//en-" + lang + "-non-debiased-"+debias_method +"_"+translation_model+".txt"
+    NON_DEBIASED_EVAL = MT_GENDER_HOME + "translations/"+translation_model+"//en-" + lang + "-non-debiased-"+debias_method +"_"+translation_model+".txt"
 
 
 

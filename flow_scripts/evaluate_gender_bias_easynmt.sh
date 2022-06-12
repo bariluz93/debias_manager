@@ -88,7 +88,8 @@ exec 2>&1
 cd ${mt_gender_dir}
 source venv/bin/activate
 cd src
-sh ../scripts/evaluate_debiased.sh ${language} ${debias_method} ${model_str}
+export FAST_ALIGN_BASE=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/fast_align
+./../scripts/evaluate_language.sh ../data/aggregates/en_anti.txt ${language} ${model_str} ${debias_method}
 
 
 

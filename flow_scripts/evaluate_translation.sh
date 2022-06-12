@@ -8,14 +8,15 @@ set -e
 #SBATCH --output=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/slurm/evaluate_translation-%j.out
 echo "**************************************** in evaluate_translation.sh ****************************************"
 
-SHORT=l:,d:,p,t,h
-LONG=language:,debias_method:,preprocess,translate,help
+SHORT=l:,d:,p,t,tnd,h
+LONG=language:,debias_method:,preprocess,translate,translate_non_debiased,help
 OPTS=$(getopt -a -n debias --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
 
 preprocess=false
 translate=false
+translate_non_debiased=false
 
 while :
 do
@@ -36,15 +37,20 @@ do
       translate=true
       shift 1
       ;;
+    -tnd | --translate_non_debiased )
+      translate_non_debiased=true
+      shift 1
+      ;;
     -h | --help)
       echo "usage:
 Mandatory arguments:
-  -l, --language                  the destination translation language .
-  -d, --debias_method             the debias method .
+  -l, --language                                 the destination translation language .
+  -d, --debias_method                            the debias method .
 Optional arguments:
-  -p, --preprocess                preprocess the anti dataset .
-  -t, --translate                 translate the entire dataset .
-  -h, --help                      help message ."
+  -p, --preprocess                               preprocess the anti dataset .
+  -t, --translate                                translate the entire dataset .
+  -tnd, --translate_non_debiased                 translate the entire dataset .
+  -h, --help                                     help message ."
       exit 2
       ;;
     --)
@@ -82,10 +88,12 @@ if [ $translate = true ]; then
        -k 12 -n -o "${outputh_path_debiased}" -c "${config_debiased}"
 
   echo "#################### translate non debiased ####################"
-  python ${nematus_dir}/nematus/translate.py \
-       -i "$input_path" \
-       -m  "$model_dir" \
-       -k 12 -n -o "${outputh_path_non_debiased}" -c "${config_non_debiased}"
+  if [ $translate_non_debiased = true ]; then
+    python ${nematus_dir}/nematus/translate.py \
+         -i "$input_path" \
+         -m  "$model_dir" \
+         -k 12 -n -o "${outputh_path_non_debiased}" -c "${config_non_debiased}"
+  fi
 fi
 #echo "#################### merge_translations ####################"
 #python ${nematus_dir}/merge_translations.py \
