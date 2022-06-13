@@ -58,16 +58,16 @@ class DebiasManager():
             self.dict = tokenizer.get_vocab()
             tokenized_professions = []
             # option 1 take only professions that are 1 token
-            for p in self.professions:
-                t = tokenizer.tokenize(p)
-                if len(t)==1:
-                    tokenized_professions.append(t[0])
-            # option 2 take all tokens of professions
             # for p in self.professions:
             #     t = tokenizer.tokenize(p)
-            #     for i in t:
-            #         if i not in tokenized_professions:
-            #           tokenized_professions.append(t[i])
+            #     if len(t)==1:
+            #         tokenized_professions.append(t[0])
+            # option 2 take all tokens of professions
+            for p in self.professions:
+                t = tokenizer.tokenize(p)
+                for i in t:
+                    if i not in tokenized_professions:
+                      tokenized_professions.append(i)
             self.professions = tokenized_professions
         self.tokenizer = tokenizer
         if non_debiased_embeddings is None:
@@ -483,8 +483,8 @@ class DebiasINLPManager(DebiasManager):
         # params = {'loss': 'hinge', 'n_jobs': 16, 'penalty': 'l2', 'max_iter': 2500, 'random_state': 0}
         # params = {}
         n = 35
-        # min_acc = 0
-        min_acc = 0.5#todo change back
+        min_acc = 0
+        # min_acc = 0.5#todo change back
         is_autoregressive = True
         dropout_rate = 0
         if self.TRANSLATION_MODEL == TranslationModelsEnum.NEMATUS:
