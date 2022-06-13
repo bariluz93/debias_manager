@@ -76,5 +76,3 @@ case ${dst_language} in
 		echo "invalid language given. the possible languages are ru, de, he"
 		;;
 esac
-
-echo "input_path ${input_path}"
