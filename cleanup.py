@@ -30,7 +30,7 @@ if __name__ == '__main__':
     # / cs / labs / gabis / bareluz / nematus_clean / nematus / en - ru / output / non_debiased_anti_1.out.tmp
     # / cs / labs / gabis / bareluz / nematus_clean / nematus / en - ru / output / debiased_1.out.tmp
     # / cs / labs / gabis / bareluz / nematus_clean / nematus / en - ru / output / non_debiased_1.out.tmp
-    languages = ["de","ru","he"]
+    languages = ["de","ru","he","es"]
     for language in languages:
         files_to_ignore = []
         if not args.clean_embedding_table:

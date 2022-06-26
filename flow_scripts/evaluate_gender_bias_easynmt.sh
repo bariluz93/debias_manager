@@ -65,6 +65,7 @@ config_debiased="{'USE_DEBIASED': 1, 'LANGUAGE': ${language_num}, 'DEBIAS_METHOD
 config_non_debiased="{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 1}"
 
 if [ $translate = true ]; then
+  echo "python ${debias_files_dir}/translate_easynmt.py -i ${input_path} -o ${outputh_path_debiased} -c ${config_debiased}"
   echo "#################### translate anti debias ####################"
   python ${debias_files_dir}/translate_easynmt.py \
        -i "$input_path" \

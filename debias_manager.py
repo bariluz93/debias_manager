@@ -58,16 +58,16 @@ class DebiasManager():
             self.dict = tokenizer.get_vocab()
             tokenized_professions = []
             # option 1 take only professions that are 1 token
-            # for p in self.professions:
-            #     t = tokenizer.tokenize(p)
-            #     if len(t)==1:
-            #         tokenized_professions.append(t[0])
-            # option 2 take all tokens of professions
             for p in self.professions:
                 t = tokenizer.tokenize(p)
-                for i in t:
-                    if i not in tokenized_professions:
-                      tokenized_professions.append(i)
+                if len(t)==1:
+                    tokenized_professions.append(t[0])
+            # option 2 take all tokens of professions
+            # for p in self.professions:
+            #     t = tokenizer.tokenize(p)
+            #     for i in t:
+            #         if i not in tokenized_professions:
+            #           tokenized_professions.append(i)
             self.professions = tokenized_professions
         self.tokenizer = tokenizer
         if non_debiased_embeddings is None:
@@ -375,7 +375,7 @@ class DebiasINLPManager(DebiasManager):
         """
         if self.by_pca:
             pairs = [("woman", "man"), ("girl", "boy"), ("she", "he"), ("mother", "father"),
-                     ("daughter", "son"), ("gal", "guy"), ("female", "male"), ("her", "his"),
+                     ("daughter", "son"), ("female", "male"), ("her", "his"),
                      ("herself", "himself"), ("Mary", "John")]
             if self.tokenizer is not None:
                 for i in range(len(pairs)):

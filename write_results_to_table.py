@@ -106,6 +106,12 @@ if __name__ == '__main__':
                  "0 = Nematus\n1 = Easy NMT")
     args = parser.parse_args()
     model = TranslationModels[int(args.model)]
+    if model=='NEMATUS':
+        LANGUAGES = list(LANGUAGES)
+        LANGUAGES.remove('es')
+    if model=='EASY_NMT':
+        LANGUAGES = list(LANGUAGES)
+        LANGUAGES.remove('es')
     result_files = {}
     for language in LANGUAGES:
         result_files[language] = {}

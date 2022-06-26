@@ -72,7 +72,19 @@ case ${dst_language} in
     esac
 		export language_num=2
 		;;
+  es)
+    case ${model_str} in
+		NEMATUS)
+		  echo "NEMATUS doesn't support spanish translation"
+		  exit 1
+		  ;;
+		EASY_NMT)
+      export input_path=${data_path}/${src_language}_${dst_language}/books.en
+      ;;
+    esac
+		export language_num=3
+		;;
 	*)
-		echo "invalid language given. the possible languages are ru, de, he"
+		echo "invalid language given. the possible languages are ru, de, he, es"
 		;;
 esac

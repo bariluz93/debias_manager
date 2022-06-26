@@ -13,13 +13,14 @@ class Language(Enum):
     RUSSIAN = 0
     GERMAN = 1
     HEBREW = 2
+    SPANISH = 3
 
 TranslationModels =["NEMATUS","EASY_NMT"]
 class TranslationModelsEnum(Enum):
     NEMATUS = 0
     EASY_NMT = 1
-LANGUAGE_STR_TO_INT_MAP = {'ru': 0,'de':1,'he':2}
-LANGUAGE_STR_MAP = {Language.RUSSIAN: "ru", Language.GERMAN: "de", Language.HEBREW: "he"}
+LANGUAGE_STR_TO_INT_MAP = {'ru': 0,'de':1,'he':2, 'es':3}
+LANGUAGE_STR_MAP = {Language.RUSSIAN: "ru", Language.GERMAN: "de", Language.HEBREW: "he", Language.SPANISH: "es"}
 
 
 class DebiasMethod(Enum):
@@ -55,6 +56,13 @@ param_dict = {
             "ENG_DICT_FILE": DATA_HOME + "en_he_20.07.21//train.clean.unesc.tok.tc.bpe.en.json",
             "BLEU_GOLD_DATA": DATA_HOME + "en_he_20.07.21//dev.unesc.tok.bpe.he",
             "BLEU_GOLD_DATA_NON_TOKENIZED": DATA_HOME + "en_he_20.07.21//dev.he",
+        },
+    Language.SPANISH:
+        {
+            "DICT_SIZE": None,
+            "ENG_DICT_FILE": None,
+            "BLEU_GOLD_DATA": None,
+            "BLEU_GOLD_DATA_NON_TOKENIZED": DATA_HOME + "en_es//books.es",
         }
 }
 
