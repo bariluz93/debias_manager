@@ -48,7 +48,7 @@ class DebiasManager():
         self.EMBEDDING_DEBIASWE_FILE, self.DEBIASED_EMBEDDING, self.SANITY_CHECK_FILE = \
             get_debias_files_from_config(consts_config_str)
 
-        _, _, _, _, self.TRANSLATION_MODEL = get_basic_configurations(consts_config_str)
+        _, _, _, _, self.TRANSLATION_MODEL,_,_,_ = get_basic_configurations(consts_config_str)
         _, _, _, _, _, self.EN_NEUTRAL_MT_GENDER = get_evaluate_gender_files(consts_config_str)
         self.professions = self.get_all_professions()
         if tokenizer is None:
@@ -83,7 +83,7 @@ class DebiasManager():
         :param consts_config_str: a configuration dictionary of the current
         :return: instance of a relevant debias manager
         """
-        _, _, _, DEBIAS_METHOD, _ = get_basic_configurations(consts_config_str)
+        _, _, _, DEBIAS_METHOD, _ ,_,_,_= get_basic_configurations(consts_config_str)
         if DebiasMethod(DEBIAS_METHOD) == DebiasMethod.BOLUKBASY:
             return DebiasBlukbasyManager(consts_config_str, non_debiased_embeddings, tokenizer)
         elif DebiasMethod(DEBIAS_METHOD) == DebiasMethod.NULL_IT_OUT:

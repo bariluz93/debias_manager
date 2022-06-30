@@ -2,8 +2,8 @@
 set -e
 
 
-SHORT=c,p,t,m:,h
-LONG=collect_embedding_table,preprocess,translate,model:,help
+SHORT=c,p,t,d,b,e,m:,h
+LONG=collect_embedding_table,preprocess,translate,debias_encoder,begining_decoder_debias,end_decoder_debias,model:,help
 OPTS=$(getopt -a -n debias --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -11,6 +11,9 @@ eval set -- "$OPTS"
 collect_embedding_table=""
 preprocess=""
 translate=""
+debias_encoder=""
+begining_decoder_debias=""
+end_decoder_debias=""
 model=""
 while :
 do
@@ -27,6 +30,18 @@ do
       translate="-t"
       shift 1
       ;;
+    -d | --debias_encoder )
+      debias_encoder="-e"
+      shift 1
+      ;;
+    -b | --begining_decoder_debias )
+      begining_decoder_debias="-ds"
+      shift 1
+      ;;
+    -e | --end_decoder_debias )
+      end_decoder_debias="-de"
+      shift 1
+      ;;
     -m | --model )
       model="$2"
       shift 2
@@ -39,7 +54,12 @@ Optional arguments:
   -c, --collect_embedding_table   collect embedding table .
   -p, --preprocess                preprocess the anti dataset .
   -t, --translate                 translate the entire dataset .
-  -h, --help                      help message ."
+  -e, --debias_encoder            debias the encoder .
+  -ds --begining_decoder_debias   debias the decoder inputs .
+  -de --end_decoder_debias        debias the decoder outputs .
+  -h, --help                      help message .
+if none of debias_encoder, begining_decoder_debias, end_decoder_debias is selected, debias_encoder is selected defaultly"
+
       exit 2
       ;;
     --)
@@ -51,23 +71,3 @@ Optional arguments:
       exit 1;;
   esac
 done
-
-
-
-if [ "${model}" == "" ]; then
-  echo missing argument model
-  exit 1
-fi
-
-case $model in
-    0|1) echo ;;
-    *) echo "argument model can get only the values 0 for Nematus or 1 to easyNMT"
-       exit 1;;
-esac
-
-if [ "$model" == '1' ]; then
-  if [[ "$collect_embedding_table" == "-c" || "$preprocess" == "-p" ]]; then
-    echo cannot pass --collect_embedding_table and --preprocess with easyNMT
-    exit 1
-  fi
-fi

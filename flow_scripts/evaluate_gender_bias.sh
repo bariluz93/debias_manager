@@ -8,14 +8,16 @@ set -e
 #SBATCH --output=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/slurm/evaluate_gender_bias-%j.out
 echo "**************************************** in evaluate_gender_bias.sh ****************************************"
 
-SHORT=l:,d:,p,t,h
-LONG=language:,debias_method:,preprocess,translate,help
+SHORT=l:,d:,t,a,b,e,h
+LONG=language:,debias_method:,translate,debias_encoder,beginning_decoder_debias,end_decoder_debias,help
 OPTS=$(getopt -a -n debias --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
 
-preprocess=false
 translate=false
+debias_encoder=0
+beginning_decoder_debias=0
+end_decoder_debias=0
 while :
 do
   case "$1" in
@@ -27,23 +29,34 @@ do
       debias_method="$2"
       shift 2
       ;;
-    -p | --preprocess )
-      preprocess=true
-      shift 1
-      ;;
     -t | --translate )
       translate=true
+      shift 1
+      ;;
+    -a | --debias_encoder )
+      debias_encoder=1
+      shift 1
+      ;;
+    -b | --beginning_decoder_debias )
+      beginning_decoder_debias=1
+      shift 1
+      ;;
+    -e | --end_decoder_debias )
+      end_decoder_debias=1
       shift 1
       ;;
     -h | --help)
       echo "usage:
 Mandatory arguments:
-  -l, --language                                 the destination translation language .
-  -d, --debias_method                            the debias method .
+  -l, --language                  the destination translation language .
+  -d, --debias_method             the debias method .
 Optional arguments:
-  -p, --preprocess                               preprocess the anti dataset .
-  -t, --translate                                translate the entire dataset .
-  -h, --help                                     help message ."
+  -p, --preprocess                preprocess the anti dataset .
+  -t, --translate                 translate the entire dataset .
+  -a, --debias_encoder            debias the encoder .
+  -b, --beginning_decoder_debias  debias the decoder inputs .
+  -e, --end_decoder_debias        debias the decoder outputs .
+  -h, --help                      help message ."
       exit 2
       ;;
     --)
@@ -78,9 +91,9 @@ outputh_path_debiased=${debias_outputs_dir}/${language_dir}/output/debiased_anti
 outputh_path_non_debiased=${debias_outputs_dir}/${language_dir}/output/non_debiased_anti_${debias_method}_NEMATUS.out.tmp
 #echo "outputh_path_debiased: ${outputh_path_debiased}"
 #echo "outputh_path_non_debiased: ${outputh_path_non_debiased}"
-config_debiased="{'USE_DEBIASED': 1, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 0}"
+config_debiased="{'USE_DEBIASED': 1, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 0, 'DEBIAS_ENCODER': ${DEBIAS_ENCODER}, 'BEGINNING_DECODER_DEBIAS': ${beginning_decoder_debias}, 'END_DECODER_DEBIAS': ${end_decoder_debias}"
 #echo "config_debiased: ${config_debiased}"
-config_non_debiased="{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 0}"
+config_non_debiased="{'USE_DEBIASED': 0, 'LANGUAGE': ${language_num}, 'COLLECT_EMBEDDING_TABLE': 0, 'DEBIAS_METHOD': ${debias_method}, 'TRANSLATION_MODEL': 0, 'DEBIAS_ENCODER': ${DEBIAS_ENCODER}, 'BEGINNING_DECODER_DEBIAS': ${beginning_decoder_debias}, 'END_DECODER_DEBIAS': ${end_decoder_debias}}"
 
 if [ $translate = true ]; then
   echo "#################### translate anti debias ####################"

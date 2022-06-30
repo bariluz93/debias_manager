@@ -7,8 +7,8 @@ set -e
 #SBATCH --mail-user=bar.iluz@mail.huji.ac.il
 #SBATCH --output=/cs/usr/bareluz/gabi_labs/nematus_clean/nematus/slurm/run_all_flows-%j.out
 
-SHORT=l:,d:,c,p,t,m:,h
-LONG=language:,debias_method:,collect_embedding_table,preprocess,translate,model:,help
+SHORT=l:,d:,c,p,t,a,b,e,m:,h
+LONG=language:,debias_method:,collect_embedding_table,preprocess,translate,debias_encoder,beginning_decoder_debias,end_decoder_debias,model:,help
 OPTS=$(getopt -a -n debias --options $SHORT --longoptions $LONG -- "$@")
 
 eval set -- "$OPTS"
@@ -16,6 +16,9 @@ eval set -- "$OPTS"
 collect_embedding_table=false
 preprocess=""
 translate=""
+debias_encoder=""
+beginning_decoder_debias=""
+end_decoder_debias=""
 model=""
 while :
 do
@@ -40,6 +43,18 @@ do
       translate="-t"
       shift 1
       ;;
+    -a | --debias_encoder )
+      debias_encoder="-a"
+      shift 1
+      ;;
+    -b | --beginning_decoder_debias )
+      beginning_decoder_debias="-b"
+      shift 1
+      ;;
+    -e | --end_decoder_debias )
+      end_decoder_debias="-e"
+      shift 1
+      ;;
     -m | --model )
       model="$2"
       shift 2
@@ -54,7 +69,12 @@ Optional arguments:
   -c, --collect_embedding_table   collect embedding table .
   -p, --preprocess                preprocess the anti dataset .
   -t, --translate                 translate the entire dataset .
-  -h, --help                      help message ."
+  -a, --debias_encoder            debias the encoder .
+  -b  --beginning_decoder_debias  debias the decoder inputs .
+  -e, --end_decoder_debias        debias the decoder outputs .
+  -h, --help                      help message .
+if none of debias_encoder, beginning_decoder_debias, end_decoder_debias is selected, debias_encoder is selected defaultly"
+
       exit 2
       ;;
     --)
@@ -66,6 +86,7 @@ Optional arguments:
       exit 1;;
   esac
 done
+
 if [ "$model" == "" ]; then
   echo missing argument model
   exit 1
@@ -92,10 +113,10 @@ fi
 
 if [ "$model" == "0" ]; then
   echo "running nematus flows"
-  sh evaluate_gender_bias.sh -l ${language} -d ${debias_method} ${preprocess} ${translate}
-  sh evaluate_translation.sh -l ${language} -d ${debias_method} ${translate}
+  sh evaluate_gender_bias.sh -l ${language} -d ${debias_method} ${preprocess} ${translate} ${debias_encoder} ${begining_decoder_debias} ${end_decoder_debias}
+  sh evaluate_translation.sh -l ${language} -d ${debias_method} ${translate} ${debias_encoder} ${begining_decoder_debias} ${end_decoder_debias}
 else
     echo "running easyNMT flows"
-  sh evaluate_gender_bias_easynmt.sh -l ${language} -d ${debias_method} ${preprocess} ${translate}
-  sh evaluate_translation_easynmt.sh -l ${language} -d ${debias_method} ${translate}
+  sh evaluate_gender_bias_easynmt.sh -l ${language} -d ${debias_method} ${preprocess} ${translate} ${debias_encoder} ${begining_decoder_debias} ${end_decoder_debias}
+  sh evaluate_translation_easynmt.sh -l ${language} -d ${debias_method} ${translate} ${debias_encoder} ${begining_decoder_debias} ${end_decoder_debias}
 fi
