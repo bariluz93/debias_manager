@@ -31,7 +31,8 @@ import copy
 sys.path.append("../../debias_files") # Adds higher directory to python modules path.
 
 from consts import get_debias_files_from_config, EMBEDDING_SIZE, DEFINITIONAL_FILE, PROFESSIONS_FILE, \
-    GENDER_SPECIFIC_FILE, EQUALIZE_FILE, get_basic_configurations, DebiasMethod, get_basic_configurations, TranslationModelsEnum, get_evaluate_gender_files
+    GENDER_SPECIFIC_FILE, EQUALIZE_FILE, get_basic_configurations, DebiasMethod, get_basic_configurations, \
+    TranslationModelsEnum, get_evaluate_gender_files, WordsToDebias
 
 sys.path.append("../..")  # Adds higher directory to python modules path.
 from nullspace_projection.src.debias import load_word_vectors, project_on_gender_subspaces, get_vectors, \
@@ -48,7 +49,7 @@ class DebiasManager():
         self.EMBEDDING_DEBIASWE_FILE, self.DEBIASED_EMBEDDING, self.SANITY_CHECK_FILE = \
             get_debias_files_from_config(consts_config_str)
 
-        _, _, _, _, self.TRANSLATION_MODEL,_,_,_ = get_basic_configurations(consts_config_str)
+        _, _, _, _, self.TRANSLATION_MODEL,_,_,_,self.WORDS_TO_DEBIAS = get_basic_configurations(consts_config_str)
         _, _, _, _, _, self.EN_NEUTRAL_MT_GENDER = get_evaluate_gender_files(consts_config_str)
         self.professions = self.get_all_professions()
         if tokenizer is None:
@@ -57,17 +58,22 @@ class DebiasManager():
         else:
             self.dict = tokenizer.get_vocab()
             tokenized_professions = []
+
             # option 1 take only professions that are 1 token
-            for p in self.professions:
-                t = tokenizer.tokenize(p)
-                if len(t)==1:
-                    tokenized_professions.append(t[0])
+            if self.WORDS_TO_DEBIAS == WordsToDebias.ONE_TOKEN_PROFESSIONS.value:
+                for p in self.professions:
+                    t = tokenizer.tokenize(p)
+                    if len(t)==1:
+                        tokenized_professions.append(t[0])
             # option 2 take all tokens of professions
-            # for p in self.professions:
-            #     t = tokenizer.tokenize(p)
-            #     for i in t:
-            #         if i not in tokenized_professions:
-            #           tokenized_professions.append(i)
+            elif self.WORDS_TO_DEBIAS == WordsToDebias.ALL_PROFESSIONS.value:
+                for p in self.professions:
+                    t = tokenizer.tokenize(p)
+                    for i in t:
+                        if i not in tokenized_professions:
+                          tokenized_professions.append(i)
+            else:
+                pass
             self.professions = tokenized_professions
         self.tokenizer = tokenizer
         if non_debiased_embeddings is None:
@@ -83,7 +89,7 @@ class DebiasManager():
         :param consts_config_str: a configuration dictionary of the current
         :return: instance of a relevant debias manager
         """
-        _, _, _, DEBIAS_METHOD, _ ,_,_,_= get_basic_configurations(consts_config_str)
+        _, _, _, DEBIAS_METHOD, _ ,_,_,_,_= get_basic_configurations(consts_config_str)
         if DebiasMethod(DEBIAS_METHOD) == DebiasMethod.BOLUKBASY:
             return DebiasBlukbasyManager(consts_config_str, non_debiased_embeddings, tokenizer)
         elif DebiasMethod(DEBIAS_METHOD) == DebiasMethod.NULL_IT_OUT:
@@ -487,7 +493,7 @@ class DebiasINLPManager(DebiasManager):
         # min_acc = 0.5#todo change back
         is_autoregressive = True
         dropout_rate = 0
-        if self.TRANSLATION_MODEL == TranslationModelsEnum.NEMATUS:
+        if self.TRANSLATION_MODEL == TranslationModelsEnum.NEMATUS.value:
             input_dim =256
         else:
             input_dim =512
@@ -498,8 +504,10 @@ class DebiasINLPManager(DebiasManager):
 
         professions_indices = np.searchsorted(words, self.professions)
         debiased_embeddings = copy.deepcopy(vecs)
-        debiased_embeddings[professions_indices] = (P.dot(debiased_embeddings[professions_indices].T)).T
-        # debiased_embeddings = (P.dot(vecs.T)).T
+        if self.WORDS_TO_DEBIAS == WordsToDebias.ALL_VOCAB.value:
+            debiased_embeddings = (P.dot(vecs.T)).T
+        else:
+            debiased_embeddings[professions_indices] = (P.dot(debiased_embeddings[professions_indices].T)).T
         self.save(debiased_embeddings)
         return debiased_embeddings
 
@@ -564,7 +572,7 @@ class DebiasBlukbasyManager(DebiasManager):
         if self.E is None:
             raise Exception("WordEmbedding E was not created")
         print("Debiasing...")
-        debias(self.E, gender_specific_words, defs, equalize_pairs, self.professions)
+        debias(self.E, gender_specific_words, defs, equalize_pairs, self.professions,self.WORDS_TO_DEBIAS)
 
         print("Saving to file...")
         self.save(self.E.vecs)

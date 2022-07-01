@@ -33,5 +33,5 @@ if __name__ == '__main__':
                  "print_line_nums= whether to print line numbers to output file in translate")
     args = parser.parse_args()
     BLEU_GOLD_DATA,BLEU_GOLD_DATA_NON_TOKENIZED, TRANSLATED_DEBIASED, TRANSLATED_NON_DEBIASED = get_evaluate_translation_files(args.config_str)
-    _, _, _, _, TRANSLATION_MODEL,_,_,_ = get_basic_configurations(args.config_str)
+    _, _, _, _, TRANSLATION_MODEL,_,_,_,_ = get_basic_configurations(args.config_str)
     evaluate_translation( parse_config(args.config_str)["LANGUAGE"])
